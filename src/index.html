@@ -7,10 +7,17 @@
     <link rel="stylesheet" href="./style.css">
 </head>
 <body>
+    <div id="move-ui">
+        Left Click to Move
+    </div>
     <!-- Cooldown Timer UI -->
-    <div id="cooldownContainer">
-        <div id="cooldownOverlay"></div>
+    <div id="fireballCooldownContainer">
+        <div id="fireballCooldownOverlay"></div>
         <span id="cooldownLabel">Q</span>
+    </div>
+    <div id="freezingPulseCooldownContainer">
+        <div id="freezingPulseCooldownOverlay"></div>
+        <span id="cooldownLabel">W</span>
     </div>
     <canvas class="webgl"></canvas>
     <script type="module" src="./script.js"></script>

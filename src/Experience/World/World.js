@@ -21,6 +21,7 @@ export default class World
             this.player = new Player()
             this.environment = new Environment()
             this.fireballs = this.player.fireballs
+            this.freezingPulses = this.player.freezingPulses
             this.skeletons = []
             this.spawnSkeletons()
         })
@@ -38,26 +39,43 @@ export default class World
             this.player.update()
         }
 
-        // Update all skeletons and fireballs
+        // Update all skeletons
         if (this.skeletons) {
-            this.skeletons.forEach(skeleton => skeleton.update());
-            this.checkCollisions();
+            this.skeletons.forEach(skeleton => {
+                skeleton.update();
+                this.checkCollisions();
+            });
         }
     }
 
     checkCollisions() {
         this.fireballs.forEach((fireball, fIndex) => {
-            this.skeletons.forEach((skeleton, sIndex) => {
+            this.skeletons.forEach((skeleton) => {
                 if (!skeleton.dead && fireball.mesh.position.distanceTo(skeleton.mesh.position) < 1.5) {
-                skeleton.takeDamage(50)
-                
-                // Trigger explosion
-                fireball.explode()
-                
-                // Remove the fireball from the list
-                this.fireballs.splice(fIndex, 1)  
-            }
+                    skeleton.takeDamage(50);
+
+                    // Trigger explosion
+                    fireball.explode();
+
+                    // Remove the fireball from the list
+                    this.fireballs.splice(fIndex, 1);  
+                }
             })
-        })
+        });
+
+        this.freezingPulses.forEach((freezingPulse, fIndex) => {
+            this.skeletons.forEach((skeleton) => {
+                if (!skeleton.dead && freezingPulse.boundingBox.intersectsBox(skeleton.boundingBox)) {
+                    skeleton.takeDamage(30);
+
+                    // Trigger freeze effect when hit by Freezing Pulse
+                    skeleton.freeze(freezingPulse.freezeDuration);
+
+                    // Remove the freezingPulse from the list
+                    freezingPulse.destroy();
+                    this.freezingPulses.splice(fIndex, 1);  
+                }
+            });
+        });
     }
 }

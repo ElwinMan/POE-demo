@@ -40,7 +40,7 @@ export default class Camera
             const targetPosition = this.player.mesh.position.clone().add(offset);
 
             // Smooth the camera movement using linear interpolation
-            this.instance.position.lerp(targetPosition, 0.1);
+            this.instance.position.lerp(targetPosition, 0.5);
 
             // Always look at the player
             this.instance.lookAt(this.player.mesh.position);

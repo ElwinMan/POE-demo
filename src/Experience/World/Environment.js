@@ -38,8 +38,9 @@ export default class Environment
         this.sunLight.shadow.normalBias = 0.05
 
         // Add the shadow helper for visualization
-        this.shadowHelper = new THREE.CameraHelper(this.sunLight.shadow.camera)
-        this.scene.add(this.shadowHelper)
+        // this.shadowHelper = new THREE.CameraHelper(this.sunLight.shadow.camera)
+        // this.scene.add(this.shadowHelper)
+        
         this.scene.add(this.sunLight)
 
         // Debug

@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import Experience from '../Experience.js'
 import Fireball from './Fireball.js'
+import FreezingPulse from './Freezingpulse.js'
 
 export default class Player
 {
@@ -17,11 +18,15 @@ export default class Player
         this.keysPressed = {}
         this.speed = 0.005
         this.destination = null
+        this.lastMousePosition = { x: 0, y: 0 };
 
         this.fireballs = []
-        this.lastMousePosition = { x: 0, y: 0 };
         this.lastFireballTime = 0;  // Time when the last fireball was shot
         this.fireballCooldown = 1000; // 1 second cooldown
+
+        this.freezingPulses = []
+        this.lastFreezingPulseTime = 0;  // Time when the last fireball was shot
+        this.freezingPulseCooldown = 1500; // 1 second cooldown
 
         // cube (player)
         this.setGeometry()
@@ -71,6 +76,13 @@ export default class Player
                 this.shootFireball();
             }
         });
+
+        // Fireball on W press
+        window.addEventListener('keydown', (event) => {
+            if (event.key.toLowerCase() === 'w') {
+                this.shootFreezingPulse();
+            }
+        });
     }
 
     moveToClick(event) {
@@ -114,6 +126,7 @@ export default class Player
 
         // Update all fireballs
         this.fireballs.forEach(fireball => fireball.update());
+        this.freezingPulses.forEach(freezingPulse => freezingPulse.update());
     }
 
     shootFireball() {
@@ -148,16 +161,66 @@ export default class Player
             this.fireballs.push(fireball);
         }
 
-        this.startCooldownUI();
+        this.startFireballCooldownUI();
     }
 
-    startCooldownUI() {
-        const overlay = document.getElementById('cooldownOverlay');
+    shootFreezingPulse() {
+        // Check if the cooldown has passed (1 second)
+        if (this.time.current - this.lastFreezingPulseTime < this.freezingPulseCooldown) {
+            return; // Do not shoot if within cooldown
+        }
+
+        // Update last freezingPulse shot time
+        this.lastFreezingPulseTime = this.time.current;
+
+        // Get the current mouse position
+        const mouse = new THREE.Vector2(
+            (this.lastMousePosition.x / window.innerWidth) * 2 - 1,
+            -(this.lastMousePosition.y / window.innerHeight) * 2 + 1
+        );
+
+        // Raycast from the camera to the mouse position
+        const raycaster = new THREE.Raycaster();
+        raycaster.setFromCamera(mouse, this.camera);
+
+        // Find where it intersects with the ground
+        const intersects = raycaster.intersectObjects(this.scene.children, true);
+        const groundHit = intersects.find((i) => i.object.name === "ground");
+
+        if (groundHit) {
+            // Calculate direction
+            const direction = groundHit.point.clone().sub(this.mesh.position).normalize();
+
+            // Create and shoot the freezingPulse
+            const freezingPulse = new FreezingPulse(this.mesh.position.clone(), direction);
+            this.freezingPulses.push(freezingPulse);
+        }
+
+        this.startFreezingPulseCooldownUI();
+    }
+
+    startFireballCooldownUI() {
+        const overlay = document.getElementById('fireballCooldownOverlay');
         overlay.style.height = '100%';
 
         const interval = setInterval(() => {
             const elapsed = this.time.current - this.lastFireballTime;
             const percentage = Math.max(0, 100 - (elapsed / this.fireballCooldown) * 100);
+            overlay.style.height = `${percentage}%`;
+
+            if (percentage <= 0) {
+                clearInterval(interval);
+            }
+        }, 50); // update every 50ms
+    }
+
+    startFreezingPulseCooldownUI() {
+        const overlay = document.getElementById('freezingPulseCooldownOverlay');
+        overlay.style.height = '100%';
+
+        const interval = setInterval(() => {
+            const elapsed = this.time.current - this.lastFreezingPulseTime;
+            const percentage = Math.max(0, 100 - (elapsed / this.freezingPulseCooldown) * 100);
             overlay.style.height = `${percentage}%`;
 
             if (percentage <= 0) {
