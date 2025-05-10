@@ -7,7 +7,10 @@ export default class Skeleton {
         this.scene = this.experience.scene
         this.health = 100
         this.maxHealth = 100
+
         this.dead = false
+        this.respawnTime = 3000; // 3 seconds for respawn
+        this.respawnTimer = null;
 
         // Set up geometry and material
         this.geometry = new THREE.BoxGeometry(1, 2, 1);
@@ -68,7 +71,15 @@ export default class Skeleton {
     }
 
     update() {
-        if (this.dead) return;
+        if (this.dead) {
+            if (!this.respawnTimer) {
+                // Start a respawn timer when the skeleton dies
+                this.respawnTimer = setTimeout(() => {
+                    this.respawn();
+                }, this.respawnTime);
+            }
+            return; // Stop further updates if dead
+        }
         
         // If skeleton is dead, remove it
         if (this.health <= 0) {
@@ -96,5 +107,28 @@ export default class Skeleton {
         }
         
         console.log('Skeleton destroyed!')
+    }
+
+    respawn() {
+        // Respawn at a random position
+        const randomX = (Math.random() - 0.5) * 20; // Random X between -10 and 10
+        const randomZ = (Math.random() - 0.5) * 20; // Random Z between -10 and 10
+        
+        // Set skeleton back to a new position
+        this.mesh.position.set(randomX, 1, randomZ);
+
+        // Reset health and state
+        this.health = 100;
+        this.dead = false;
+
+        // Add skeleton back to the scene
+        this.scene.add(this.mesh);
+        console.log('Skeleton respawned!');
+        
+        // Recreate the health bar for the respawned skeleton
+        this.createHealthBar();
+
+        // Reset the respawn timer
+        this.respawnTimer = null;
     }
 }

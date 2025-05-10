@@ -80,8 +80,14 @@ export default class Fireball {
     update() {
         if (this.exploded) return
         this.mesh.position.add(this.direction.clone().multiplyScalar(this.speed))
+
+        // Set the Y position to always be 1
+        this.mesh.position.y = 1;
+
+        // Update particle positions to follow the fireball
         this.updateParticles()
 
+        // Update particle geometry positions
         const positions = this.particleGeometry.attributes.position.array
         for (let i = positions.length - 3; i > 0; i -= 3) {
             positions[i] = positions[i - 3]
