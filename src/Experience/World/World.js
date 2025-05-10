@@ -19,7 +19,6 @@ export default class World
             // Setup
             this.floor = new Floor()
             this.player = new Player()
-            this.skeleton = new Skeleton(new THREE.Vector3(5, 0.5, -5))
             this.environment = new Environment()
             this.fireballs = this.player.fireballs
             this.skeletons = []
@@ -40,7 +39,7 @@ export default class World
         }
 
         // Update all skeletons and fireballs
-        if (this.skeleton) {
+        if (this.skeletons) {
             this.skeletons.forEach(skeleton => skeleton.update());
             this.checkCollisions();
         }
