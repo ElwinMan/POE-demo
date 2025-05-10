@@ -9,6 +9,7 @@ export default class Fireball {
         this.direction = direction
         this.lifeSpan = 2000 // 2 seconds
         this.startTime = this.experience.time.current
+        this.exploded = false
 
         // Create the fireball
         this.setGeometry()
@@ -39,7 +40,6 @@ export default class Fireball {
     }
 
     setParticles() {
-        // Particle Geometry
         const particleCount = 100
         this.particleGeometry = new THREE.BufferGeometry()
         const positions = new Float32Array(particleCount * 3)
@@ -52,7 +52,6 @@ export default class Fireball {
 
         this.particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
 
-        // Particle Material
         this.particleMaterial = new THREE.PointsMaterial({
             color: 0xffa500,
             size: 0.05,
@@ -66,8 +65,9 @@ export default class Fireball {
     }
 
     updateParticles() {
-        const positions = this.particleGeometry.attributes.position.array
+        if (this.exploded) return
 
+        const positions = this.particleGeometry.attributes.position.array
         for (let i = 0; i < positions.length; i += 3) {
             positions[i] += (Math.random() - 0.5) * 0.1
             positions[i + 1] += (Math.random() - 0.5) * 0.1
@@ -78,12 +78,10 @@ export default class Fireball {
     }
 
     update() {
-        // Move the fireball
+        if (this.exploded) return
         this.mesh.position.add(this.direction.clone().multiplyScalar(this.speed))
-
-        // Sync particle position with the fireball
         this.updateParticles()
-        
+
         const positions = this.particleGeometry.attributes.position.array
         for (let i = positions.length - 3; i > 0; i -= 3) {
             positions[i] = positions[i - 3]
@@ -91,15 +89,51 @@ export default class Fireball {
             positions[i + 2] = positions[i - 1]
         }
 
-        // Place a new particle at the fireball's current position
         positions[0] = this.mesh.position.x
         positions[1] = this.mesh.position.y
         positions[2] = this.mesh.position.z
 
-        // Lifetime check
         if (this.experience.time.current - this.startTime > this.lifeSpan) {
             this.destroy()
         }
+    }
+
+    explode() {
+        if (this.exploded) return
+        this.exploded = true
+
+        // Remove the fireball mesh
+        this.scene.remove(this.mesh)
+
+        // Create explosion effect
+        const explosionGeometry = new THREE.SphereGeometry(0.5, 16, 16)
+        const explosionMaterial = new THREE.MeshBasicMaterial({
+            color: 0xff4500,
+            transparent: true,
+            opacity: 0.7
+        })
+        const explosionMesh = new THREE.Mesh(explosionGeometry, explosionMaterial)
+        explosionMesh.position.copy(this.mesh.position)
+        this.scene.add(explosionMesh)
+
+        // Expand and fade the explosion
+        const duration = 300
+        let elapsed = 0
+
+        const animateExplosion = () => {
+            if (elapsed < duration) {
+                explosionMesh.scale.addScalar(0.05)
+                explosionMaterial.opacity -= 0.02
+                elapsed += 16
+                requestAnimationFrame(animateExplosion)
+            } else {
+                this.scene.remove(explosionMesh)
+                explosionGeometry.dispose()
+                explosionMaterial.dispose()
+                this.destroy()
+            }
+        }
+        animateExplosion()
     }
 
     destroy() {

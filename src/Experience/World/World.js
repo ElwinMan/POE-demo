@@ -49,10 +49,14 @@ export default class World
         this.fireballs.forEach((fireball, fIndex) => {
             this.skeletons.forEach((skeleton, sIndex) => {
                 if (!skeleton.dead && fireball.mesh.position.distanceTo(skeleton.mesh.position) < 1.5) {
-                    skeleton.takeDamage(50)
-                    fireball.destroy()
-                    this.fireballs.splice(fIndex, 1)  // Remove the fireball from the list
-                }
+                skeleton.takeDamage(50)
+                
+                // Trigger explosion
+                fireball.explode()
+                
+                // Remove the fireball from the list
+                this.fireballs.splice(fIndex, 1)  
+            }
             })
         })
     }
