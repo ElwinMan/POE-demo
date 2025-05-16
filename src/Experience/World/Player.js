@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import Experience from '../Experience.js'
 import Fireball from './Fireball.js'
-import FreezingPulse from './Freezingpulse.js'
+import FreezingPulse from './FreezingPulse.js'
 
 export default class Player
 {

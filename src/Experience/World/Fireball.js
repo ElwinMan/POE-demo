@@ -5,7 +5,7 @@ export default class Fireball {
     constructor(startPosition, direction) {
         this.experience = new Experience()
         this.scene = this.experience.scene
-        this.speed = 0.05
+        this.speed = 0.01 * this.experience.time.delta
         this.direction = direction
         this.lifeSpan = 2000 // 2 seconds
         this.startTime = this.experience.time.current

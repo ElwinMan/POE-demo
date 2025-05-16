@@ -5,7 +5,7 @@ export default class FreezingPulse {
     constructor(startPosition, direction) {
         this.experience = new Experience()
         this.scene = this.experience.scene
-        this.speed = 0.15
+        this.speed = 0.02 * this.experience.time.delta
         this.direction = direction
         this.lifeSpan = 3000 // 3 seconds lifespan
         this.startTime = this.experience.time.current
